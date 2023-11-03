@@ -1,7 +1,7 @@
 ﻿using Discord.Interactions;
 using Discord.WebSocket;
 
-namespace Petrucio.Entrypoint
+namespace Petrucio.Domain.SlashCommands
 {
     public class IniciarSlashCommand : InteractionModuleBase
     {
