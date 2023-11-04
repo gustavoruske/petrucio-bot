@@ -1,6 +1,7 @@
 ﻿using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Petrucio.Domain.SlashCommands;
@@ -10,19 +11,19 @@ namespace Petrucio.Domain.Services
     public class EntrypointService
     {
         private readonly DiscordSocketClient _client;
+        private readonly UserVoiceStateUpdatedService _userVoiceStateUpdatedService;
+        private readonly IMemoryCache _memoryCache;
+
         private readonly IServiceProvider _serviceProvider;
         private readonly IConfiguration _configuration;
 
-        public EntrypointService(IServiceProvider serviceProvider, IConfiguration configuration)
+        public EntrypointService(IServiceProvider serviceProvider, IConfiguration configuration, UserVoiceStateUpdatedService userVoiceStateUpdatedService, IMemoryCache memoryCache, DiscordSocketClient client)
         {
-            _client = new DiscordSocketClient(new DiscordSocketConfig
-            {
-                LogLevel = LogSeverity.Info,
-                GatewayIntents = GatewayIntents.All
-            });
-
-            this._serviceProvider = serviceProvider;
+            _serviceProvider = serviceProvider;
             _configuration = configuration;
+            _userVoiceStateUpdatedService = userVoiceStateUpdatedService;
+            _memoryCache = memoryCache;
+            _client = client;
         }
 
         public async Task Init()
@@ -32,13 +33,8 @@ namespace Petrucio.Domain.Services
 
             _client.Log += Log;
 
-            // Login and connect.
-            await _client.LoginAsync(TokenType.Bot,
-                Environment.GetEnvironmentVariable("discord_bot_token")
-                );
-            await _client.StartAsync();
-
             _client.Ready += ClientReady;
+            _client.UserVoiceStateUpdated += _userVoiceStateUpdatedService.Execute;
 
             await Task.Delay(Timeout.Infinite);
         }

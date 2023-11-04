@@ -3,6 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Petrucio.Domain.Services;
 using Petrucio.Domain.Extensions;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Caching.Memory;
 
 class Start
 {
@@ -19,6 +20,7 @@ class Start
             .ConfigureServices(services => {
                 services.AddSingleton(config);
                 services.AddDependencyInjection();
+                services.AddMemoryCache();
             })
             .Build();
 
